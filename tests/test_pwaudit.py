@@ -131,6 +131,13 @@ class TestCrackTime(unittest.TestCase):
         self.assertIn("minutes", crack_time.humanise(600))
         self.assertIn("years", crack_time.humanise(crack_time.YEAR * 5))
 
+    def test_humanise_uses_singular_for_one(self):
+        self.assertEqual(crack_time.humanise(1), "1 second")
+        self.assertEqual(crack_time.humanise(crack_time.MINUTE), "1 minute")
+        self.assertEqual(crack_time.humanise(crack_time.HOUR), "1 hour")
+        self.assertEqual(crack_time.humanise(crack_time.YEAR), "1 year")
+        self.assertEqual(crack_time.humanise(crack_time.CENTURY), "1 century")
+
 
 if __name__ == "__main__":
     unittest.main()

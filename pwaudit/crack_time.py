@@ -47,23 +47,27 @@ def guesses_for(entropy_bits: float) -> float:
     return (2.0 ** entropy_bits) / 2.0
 
 
+def _plural(count: float, singular: str, plural: str) -> str:
+    return f"{count:.0f} {singular if round(count) == 1 else plural}"
+
+
 def humanise(seconds: float) -> str:
     if seconds < 1:
         return "instantly"
     if seconds < MINUTE:
-        return f"{seconds:.0f} seconds"
+        return _plural(seconds, "second", "seconds")
     if seconds < HOUR:
-        return f"{seconds / MINUTE:.0f} minutes"
+        return _plural(seconds / MINUTE, "minute", "minutes")
     if seconds < DAY:
-        return f"{seconds / HOUR:.0f} hours"
+        return _plural(seconds / HOUR, "hour", "hours")
     if seconds < MONTH:
-        return f"{seconds / DAY:.0f} days"
+        return _plural(seconds / DAY, "day", "days")
     if seconds < YEAR:
-        return f"{seconds / MONTH:.0f} months"
+        return _plural(seconds / MONTH, "month", "months")
     if seconds < CENTURY:
-        return f"{seconds / YEAR:.0f} years"
+        return _plural(seconds / YEAR, "year", "years")
     if seconds < CENTURY * 1_000:
-        return f"{seconds / CENTURY:.0f} centuries"
+        return _plural(seconds / CENTURY, "century", "centuries")
     return "longer than recorded history"
 
 
