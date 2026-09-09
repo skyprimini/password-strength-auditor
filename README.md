@@ -59,9 +59,38 @@ GPU cracking of a fast hash.
 **4. Batch auditing.** Reads a file of passwords and produces either a summary
 table or a JSON report, so you can see which credentials to rotate first.
 
-## Requirements
+## Setup
 
-Python 3.10 or newer. No third-party dependencies.
+Python 3.10 or newer. There are no third-party dependencies, so there is
+nothing to install beyond Python itself.
+
+```bash
+git clone https://github.com/skyprimini/password-strength-auditor.git
+cd password-strength-auditor
+python3 --version   # expect 3.10 or newer
+python3 -m pwaudit --help
+```
+
+Run the commands below from the repository root. The tool is invoked as a
+module (`python3 -m pwaudit`) rather than an installed command, so Python needs
+to find the `pwaudit` package in the current directory. Installing it as a
+standalone `pwaudit` command is tracked as future work.
+
+On Windows, use `python` in place of `python3`.
+
+<details>
+<summary>Optional: run inside a virtual environment</summary>
+
+Not required, since there are no dependencies, but harmless if you prefer to
+keep things isolated:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+python -m pwaudit --help
+```
+
+</details>
 
 ## Usage
 
