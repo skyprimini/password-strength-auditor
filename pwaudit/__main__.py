@@ -7,7 +7,7 @@ import getpass
 import json
 import sys
 
-from . import batch, crack_time, scoring
+from . import batch, breach, crack_time, scoring
 
 BAR_WIDTH = 20
 
@@ -17,12 +17,15 @@ def _bar(score: int) -> str:
     return "[" + "#" * filled + "." * (BAR_WIDTH - filled) + "]"
 
 
-def report_single(password: str, as_json: bool) -> int:
+def report_single(password: str, as_json: bool, check_breaches: bool = False) -> int:
     result = scoring.evaluate(password)
+    breach_result = breach.check(password) if check_breaches else None
 
     if as_json:
         payload = result.as_dict()
         payload["crack_time"] = crack_time.as_dict(result.entropy)
+        if breach_result is not None:
+            payload["breach"] = breach_result.as_dict()
         print(json.dumps(payload, indent=2))
         return 0 if result.score >= 3 else 1
 
@@ -38,6 +41,13 @@ def report_single(password: str, as_json: bool) -> int:
     for estimate in crack_time.estimate_all(result.entropy):
         print(f"    {estimate.description:<38} {estimate.human}")
 
+    if breach_result is not None:
+        print()
+        print("  Breach check")
+        print(f"    {breach_result.summary()}")
+        if breach_result.breached:
+            print("    Treat this password as compromised and change it everywhere.")
+
     if result.findings:
         print()
         print("  Weaknesses found")
@@ -50,6 +60,8 @@ def report_single(password: str, as_json: bool) -> int:
         print(f"    - {tip}")
     print()
 
+    if breach_result is not None and breach_result.breached:
+        return 1
     return 0 if result.score >= 3 else 1
 
 
@@ -76,6 +88,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("-f", "--file", help="audit a file of passwords, one per line")
     parser.add_argument("--json", action="store_true", help="emit JSON instead of text")
+    parser.add_argument(
+        "--check-breaches",
+        action="store_true",
+        help="look the password up in the Have I Been Pwned corpus; only the first "
+             "five characters of its SHA-1 hash leave this machine",
+    )
     return parser
 
 
@@ -93,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
         print("No password given.", file=sys.stderr)
         return 2
 
-    return report_single(password, args.json)
+    return report_single(password, args.json, args.check_breaches)
 
 
 if __name__ == "__main__":
