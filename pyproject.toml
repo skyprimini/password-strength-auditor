@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pwaudit"
+version = "0.1.0"
+description = "Password strength auditor using entropy, pattern detection, and breach checking"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Syanne Voxland", email = "syannevoxland@gmail.com" }]
+keywords = ["password", "security", "entropy", "audit"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Security",
+]
+# Deliberately empty: the tool runs on the standard library alone.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/skyprimini/password-strength-auditor"
+Issues = "https://github.com/skyprimini/password-strength-auditor/issues"
+
+[project.scripts]
+pwaudit = "pwaudit.__main__:main"
+
+[tool.setuptools]
+packages = ["pwaudit"]
+
+[tool.setuptools.package-data]
+pwaudit = ["data/*.txt"]

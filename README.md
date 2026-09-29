@@ -83,10 +83,25 @@ python3 --version   # expect 3.10 or newer
 python3 -m pwaudit --help
 ```
 
-Run the commands below from the repository root. The tool is invoked as a
-module (`python3 -m pwaudit`) rather than an installed command, so Python needs
-to find the `pwaudit` package in the current directory. Installing it as a
-standalone `pwaudit` command is tracked as future work.
+### Install it as a command
+
+```bash
+pip install -e .
+pwaudit --help
+```
+
+That registers a `pwaudit` command that works from any directory. The `-e` makes
+it an editable install, so edits to the source take effect immediately; drop it
+for a normal install.
+
+### Or run it without installing
+
+```bash
+python3 -m pwaudit --help
+```
+
+This works straight from a clone with nothing installed, but must be run from
+the repository root so Python can find the `pwaudit` package.
 
 On Windows, use `python` in place of `python3`.
 
@@ -109,13 +124,13 @@ python -m pwaudit --help
 Check a single password, prompted so it stays out of your shell history:
 
 ```bash
-python -m pwaudit
+pwaudit
 ```
 
 Or pass it directly:
 
 ```bash
-python -m pwaudit 'correct horse battery staple'
+pwaudit 'correct horse battery staple'
 ```
 
 ```
@@ -137,7 +152,7 @@ Audit a file. Lines may be `password` or `label:password`; blank lines and
 lines starting with `#` are ignored:
 
 ```bash
-python -m pwaudit --file passwords.txt
+pwaudit --file passwords.txt
 ```
 
 ```
@@ -155,7 +170,7 @@ old-forum   very weak      11.6  instantly
 Check whether a password has turned up in a breach:
 
 ```bash
-python -m pwaudit 'password' --check-breaches
+pwaudit 'password' --check-breaches
 ```
 
 ```
@@ -167,7 +182,7 @@ python -m pwaudit 'password' --check-breaches
 Machine-readable output, for piping into another tool:
 
 ```bash
-python -m pwaudit --file passwords.txt --json
+pwaudit --file passwords.txt --json
 ```
 
 Exit code is `0` when everything scores 3 or better and `1` otherwise, so it can
@@ -176,7 +191,7 @@ gate a CI check.
 ## Running the tests
 
 ```bash
-python -m unittest discover -s tests -t .
+python3 -m unittest discover -s tests -t .
 ```
 
 44 tests covering the character-pool maths, each pattern detector, end-to-end
@@ -197,6 +212,8 @@ pwaudit/
   data/          common password list
 tests/
   test_pwaudit.py
+  test_breach.py
+pyproject.toml   packaging and the pwaudit entry point
 ```
 
 ## A caution
@@ -208,4 +225,4 @@ writes the password anywhere, but the habit is still a bad one.
 ## Planned work
 
 Tracked as issues on this repository: richer leet handling, a larger frequency
-list, an installable console entry point, and an HTML report for batch audits.
+list, and an HTML report for batch audits.

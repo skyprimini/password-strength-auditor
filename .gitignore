@@ -4,3 +4,6 @@ __pycache__/
 venv/
 .DS_Store
 passwords.txt
+*.egg-info/
+build/
+dist/
