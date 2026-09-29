@@ -7,7 +7,7 @@ import getpass
 import json
 import sys
 
-from . import batch, breach, crack_time, scoring
+from . import batch, breach, crack_time, report, scoring
 
 BAR_WIDTH = 20
 
@@ -65,14 +65,18 @@ def report_single(password: str, as_json: bool, check_breaches: bool = False) ->
     return 0 if result.score >= 3 else 1
 
 
-def report_batch(path: str, as_json: bool) -> int:
+def report_batch(path: str, as_json: bool, html_path: str | None = None) -> int:
     try:
         rows = batch.audit_file(path)
     except FileNotFoundError:
         print(f"No such file: {path}", file=sys.stderr)
         return 2
 
-    print(batch.to_json(rows) if as_json else batch.to_table(rows))
+    if html_path:
+        report.write(rows, html_path)
+        print(f"Wrote {html_path} ({len(rows)} passwords). No passwords are stored in it.")
+    else:
+        print(batch.to_json(rows) if as_json else batch.to_table(rows))
     return 0 if all(row.result.score >= 3 for row in rows) else 1
 
 
@@ -89,6 +93,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-f", "--file", help="audit a file of passwords, one per line")
     parser.add_argument("--json", action="store_true", help="emit JSON instead of text")
     parser.add_argument(
+        "--html",
+        metavar="FILE",
+        help="write a standalone HTML report of a batch audit to FILE",
+    )
+    parser.add_argument(
         "--check-breaches",
         action="store_true",
         help="look the password up in the Have I Been Pwned corpus; only the first "
@@ -100,8 +109,12 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
+    if args.html and not args.file:
+        print("--html reports a batch audit, so it needs --file too.", file=sys.stderr)
+        return 2
+
     if args.file:
-        return report_batch(args.file, args.json)
+        return report_batch(args.file, args.json, args.html)
 
     password = args.password
     if password is None:
