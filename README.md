@@ -59,6 +59,10 @@ GPU cracking of a fast hash.
 **4. Batch auditing.** Reads a file of passwords and produces either a summary
 table or a JSON report, so you can see which credentials to rotate first.
 
+**6. HTML reporting.** Turns a batch audit into a standalone HTML file that can
+be shared with someone deciding what to rotate first, without handing them the
+credentials.
+
 **5. Breach checking.** Optionally looks the password up in the Have I Been
 Pwned corpus. A password can be long, random, and high-entropy and still be
 compromised if it has appeared in a breach, and entropy alone will never tell
@@ -179,6 +183,17 @@ pwaudit 'password' --check-breaches
     Treat this password as compromised and change it everywhere.
 ```
 
+Write a shareable HTML report of a batch audit:
+
+```bash
+pwaudit --file passwords.txt --html report.html
+```
+
+The report is a single self-contained file with no external assets, so it
+survives being emailed around. It shows summary counts, a sortable table of
+every entry, and colour-coded strengths. **It never contains the passwords
+themselves**, only their labels and the scores derived from them.
+
 Machine-readable output, for piping into another tool:
 
 ```bash
@@ -194,10 +209,11 @@ gate a CI check.
 python3 -m unittest discover -s tests -t .
 ```
 
-44 tests covering the character-pool maths, each pattern detector, end-to-end
+54 tests covering the character-pool maths, each pattern detector, end-to-end
 scoring of known-weak and known-strong passwords, the crack-time boundaries, and
-the breach lookup. The breach tests use a fake HTTP opener, so the whole suite
-runs offline and never contacts the network.
+the breach lookup, and the HTML report. The breach tests use a fake HTTP opener,
+so the whole suite runs offline and never contacts the network. One test asserts
+that no password ever appears in a generated report.
 
 ## Project layout
 
@@ -209,10 +225,12 @@ pwaudit/
   crack_time.py  attacker models and time estimates
   batch.py       file auditing and reports
   breach.py      Have I Been Pwned lookup, k-anonymity
+  report.py      standalone HTML report
   data/          common password list
 tests/
   test_pwaudit.py
   test_breach.py
+  test_report.py
 pyproject.toml   packaging and the pwaudit entry point
 ```
 
@@ -224,5 +242,5 @@ writes the password anywhere, but the habit is still a bad one.
 
 ## Planned work
 
-Tracked as issues on this repository: richer leet handling, a larger frequency
-list, and an HTML report for batch audits.
+Tracked as issues on this repository: richer leet handling and a larger
+frequency list.
