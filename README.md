@@ -59,6 +59,18 @@ GPU cracking of a fast hash.
 **4. Batch auditing.** Reads a file of passwords and produces either a summary
 table or a JSON report, so you can see which credentials to rotate first.
 
+**5. Breach checking.** Optionally looks the password up in the Have I Been
+Pwned corpus. A password can be long, random, and high-entropy and still be
+compromised if it has appeared in a breach, and entropy alone will never tell
+you that.
+
+The lookup uses k-anonymity: the password is hashed with SHA-1 and only the
+**first five characters of that hash** are sent. The server returns every
+suffix sharing that prefix and the match happens on your machine, so it never
+learns which password was asked about and never sees the password itself. It is
+behind the `--check-breaches` flag because it is the only part of the tool that
+touches the network, and it degrades quietly to "not checked" when offline.
+
 ## Setup
 
 Python 3.10 or newer. There are no third-party dependencies, so there is
@@ -140,6 +152,18 @@ old-forum   very weak      11.6  instantly
 5 passwords: 3 very weak, 2 very strong
 ```
 
+Check whether a password has turned up in a breach:
+
+```bash
+python -m pwaudit 'password' --check-breaches
+```
+
+```
+  Breach check
+    found 52,372,427 times in the breach corpus
+    Treat this password as compromised and change it everywhere.
+```
+
 Machine-readable output, for piping into another tool:
 
 ```bash
@@ -155,8 +179,10 @@ gate a CI check.
 python -m unittest discover -s tests -t .
 ```
 
-30 tests covering the character-pool maths, each pattern detector, end-to-end
-scoring of known-weak and known-strong passwords, and the crack-time boundaries.
+44 tests covering the character-pool maths, each pattern detector, end-to-end
+scoring of known-weak and known-strong passwords, the crack-time boundaries, and
+the breach lookup. The breach tests use a fake HTTP opener, so the whole suite
+runs offline and never contacts the network.
 
 ## Project layout
 
@@ -167,6 +193,7 @@ pwaudit/
   patterns.py    weakness detectors
   crack_time.py  attacker models and time estimates
   batch.py       file auditing and reports
+  breach.py      Have I Been Pwned lookup, k-anonymity
   data/          common password list
 tests/
   test_pwaudit.py
@@ -180,6 +207,5 @@ writes the password anywhere, but the habit is still a bad one.
 
 ## Planned work
 
-Tracked as issues on this repository: breach checking through the Have I Been
-Pwned range API using k-anonymity, richer leet handling, a larger frequency
-list, and an installable console entry point.
+Tracked as issues on this repository: richer leet handling, a larger frequency
+list, an installable console entry point, and an HTML report for batch audits.
