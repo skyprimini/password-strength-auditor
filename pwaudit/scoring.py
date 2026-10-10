@@ -122,7 +122,7 @@ def evaluate(password: str) -> Result:
     # entropy below zero and the worst single finding still dominates.
     remaining = 1.0
     for finding in findings:
-        remaining *= 1.0 - finding.penalty
+        remaining *= finding.penalty
 
     entropy = base * remaining
     score = _score_for(entropy)
