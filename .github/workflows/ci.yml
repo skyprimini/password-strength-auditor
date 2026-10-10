@@ -1,0 +1,54 @@
+name: CI
+
+# Run on every push and pull request against main, so a broken commit is
+# caught whether it arrives directly or through a PR.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Keep going if one version fails, so the log shows whether a failure is
+      # version specific or affects everything.
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the package
+        # The tool itself needs no third-party packages; coverage is the only
+        # development dependency.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+          python -m pip install coverage
+
+      - name: Build check
+        # No compile step for a pure Python package, so the equivalent build
+        # check is that every module imports and the console script resolves.
+        run: |
+          python -c "import pwaudit, pwaudit.scoring, pwaudit.patterns, pwaudit.crack_time, pwaudit.batch, pwaudit.breach, pwaudit.report; print('all modules import')"
+          pwaudit --help
+
+      - name: Run tests
+        run: python -m coverage run -m unittest discover -s tests -t . -v
+
+      - name: Coverage of the whole package
+        run: python -m coverage report -m
+
+      - name: Coverage of scoring.evaluate must stay above 70%
+        run: python scripts/method_coverage.py pwaudit/scoring.py evaluate
